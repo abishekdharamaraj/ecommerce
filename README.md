@@ -23,6 +23,9 @@ A RESTful e-commerce backend built with **Java, Spring Boot and MySQL**. It cove
 - [License](#license)
 - [Author](#author)
 
+## Database Schema
+
+![Database Schema](docs/DB_Structure.png)
 ## Features
 - User registration and login with **Spring Security + JWT**
 - Role-based access control (`ADMIN` / `USER`)
