@@ -9,4 +9,6 @@ public interface CartServiceImp {
 
 	void updatebyid(Long id, CartRequestDto cartrequestdto);
 
+	void patchcart(Long id, CartRequestDto cartrequestdto);
+
 }
