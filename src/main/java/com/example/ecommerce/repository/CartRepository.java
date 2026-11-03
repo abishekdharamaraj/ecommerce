@@ -9,7 +9,9 @@ import com.example.ecommerce.entity.Userentity;
 
 public interface CartRepository extends JpaRepository<Cart,Long>{
 	
-	Optional <Cart> findByuser(Userentity user);
+	Optional <Cart> findByUser(Userentity user);
+	
+	Optional <Cart>findByUserAndCartid(Userentity user,Long id);
 	
 	
 	

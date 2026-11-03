@@ -17,6 +17,8 @@ import com.example.ecommerce.entity.Cart;
 import com.example.ecommerce.entity.CartItem;
 import com.example.ecommerce.entity.Product;
 import com.example.ecommerce.entity.Userentity;
+import com.example.ecommerce.excepton.RequestNullException;
+import com.example.ecommerce.excepton.ResourceNotFoundException;
 import com.example.ecommerce.repository.CartItemRepository;
 import com.example.ecommerce.repository.CartRepository;
 import com.example.ecommerce.repository.ProductRepository;
@@ -43,6 +45,10 @@ public class CartService implements CartServiceImp{
 	@Override
 	@Transactional
 	public CartResponseDto addcart(CartRequestDto cartrequestdto) {
+		if(cartrequestdto == null) {
+			throw new RequestNullException("Invalid Request");
+			
+		}
 		
 
 		Long id = cartrequestdto.getProductid();
@@ -50,7 +56,7 @@ public class CartService implements CartServiceImp{
 		String email = authentication.getName();
 		Userentity user = uspero.findByEmail(email).orElseThrow(() -> new RuntimeException("Email not found"));
 
-		Cart cart = cartrepo.findByuser(user).orElseGet(() -> {
+		Cart cart = cartrepo.findByUser(user).orElseGet(() -> {
 			Cart newCart = new Cart();
             newCart.setUser(user);
             return cartrepo.save(newCart);
@@ -63,7 +69,6 @@ public class CartService implements CartServiceImp{
         Optional<CartItem> existingItem = cartitems.findByProductAndCart(pro, cart);
 	     if (existingItem.isPresent()) {
 	    	 item = existingItem.get();
-	    	 System.out.println("thiss...................." + item);
 	    	item.setQuantity( item.getQuantity().add(cartrequestdto.getQuantity()));
 	     }
 	     else {
@@ -108,22 +113,65 @@ public class CartService implements CartServiceImp{
 
 
 	@Override
+	@Transactional
 	public void updatebyid(Long id, CartRequestDto cartrequestdto) {
-		// TODO Auto-generated method stub
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		String Email = auth.getName();
-		Userentity user = uspero.findByEmail(Email).orElseThrow(()-> new RuntimeException("No user Found"));
-		cartrepo.findByuser(user).orElseThrow(()-> new RuntimeException("No Cart Found"));
-		Cart carts = cartrepo.findById(id).orElseThrow(()-> new RuntimeException("No Cart Found"));
-		Product product = productrepo.findById(cartrequestdto.getProductid()).orElseThrow(()-> new RuntimeException("No product Found"));
-		CartItem cartitem = new CartItem();
+
 		
+		if(cartrequestdto == null) {
+			throw new RequestNullException("Invalid Request");
+		}
 		
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		
+		String Email = authentication.getName();
+		Userentity user = uspero.findByEmail(Email).orElseThrow(() -> new ResourceNotFoundException("No User Found"));
+		System.out.println(user);
+		Cart cart = cartrepo.findByUserAndCartid(user, id).orElseThrow(() -> new ResourceNotFoundException("No Cart Found"));
+		Product product = productrepo.findById(cartrequestdto.getProductid()).orElseThrow(() -> new ResourceNotFoundException("No product Found"));
 		
+		CartItem cartitem =cartitems.findByProductAndCart(product, cart).orElseThrow(() ->  new ResourceNotFoundException("No Cart Item found"));
+		
+		cartitem.setProduct(product);
+		cartitem.setQuantity(cartrequestdto.getQuantity());
+		cartitem.setSubtotal(product.getPrice().multiply(cartrequestdto.getQuantity()));
+		
+		BigDecimal total = BigDecimal.ZERO;
+		for (CartItem item : cart.getCartitem()) {
+		    total = total.add(item.getSubtotal());
+		}
+		
+		cart.setTotal(total);
+		
+		cartrepo.save(cart);
+
+
 		
 		
 	}
+
+
+	@Override
+	public void patchcart(Long id, CartRequestDto cartrequestdto) {
+		
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		String email = authentication.getName();
+		Userentity user =uspero.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("No User Found"));
+		Cart cart = cartrepo.findByUserAndCartid(user, id).orElseThrow(() -> new ResourceNotFoundException("No Cart Found"));
+		Product product = productrepo.findById(cartrequestdto.getProductid()).orElseThrow(() -> new ResourceNotFoundException("No product Found"));
+		CartItem cartitem = cartitems.findByProductAndCart(product, cart).orElseThrow(() -> new ResourceNotFoundException("No Cartitem Found"));
+		
+		cartitem.setQuantity(cartrequestdto.getQuantity().subtract(cartitem.getQuantity()));
+		cartitem.setPrice(product.getPrice().subtract(cartitem.getPrice()));
+		cartitem.setSubtotal(product.getPrice().subtract(cartitem.getSubtotal()));
+		
+		BigDecimal total = cart.getTotal();
+		cart.setTotal(total.subtract(product.getPrice()));
+		
+		cartrepo.save(cart);
+		
+	}
+	
+	
 	
 
 
