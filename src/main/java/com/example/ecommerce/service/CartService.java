@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -160,6 +161,12 @@ public class CartService implements CartServiceImp{
 		Product product = productrepo.findById(cartrequestdto.getProductid()).orElseThrow(() -> new ResourceNotFoundException("No product Found"));
 		CartItem cartitem = cartitems.findByProductAndCart(product, cart).orElseThrow(() -> new ResourceNotFoundException("No Cartitem Found"));
 		
+		
+		if(cartrequestdto.getQuantity().compareTo(BigDecimal.ZERO) <= 0) {
+			
+			throw new RuntimeException("invalid");
+			
+		}
 		cartitem.setQuantity(cartrequestdto.getQuantity().subtract(cartitem.getQuantity()));
 		cartitem.setPrice(product.getPrice().subtract(cartitem.getPrice()));
 		cartitem.setSubtotal(product.getPrice().subtract(cartitem.getSubtotal()));
@@ -169,6 +176,13 @@ public class CartService implements CartServiceImp{
 		
 		cartrepo.save(cart);
 		
+	}
+
+
+	@Override
+	public Page<CartResponseDto> getcart(Long page, Long size) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	
