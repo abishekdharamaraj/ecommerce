@@ -21,6 +21,12 @@ public class GlobalExceptionHandler {
     	return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ex.getMessage());
     }
     
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> nouserfound(UserNotFoundException ex){
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ex.getMessage());
+    	
+    }
+    
     
     
 

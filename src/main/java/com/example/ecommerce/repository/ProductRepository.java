@@ -1,6 +1,7 @@
 package com.example.ecommerce.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.example.ecommerce.entity.Category;
 import com.example.ecommerce.entity.Product;
 
 public interface ProductRepository extends JpaRepository<Product,Long>{
@@ -27,6 +29,12 @@ public interface ProductRepository extends JpaRepository<Product,Long>{
             (:price IS NULL OR p.price <= :price)
             """)
 	Page<Product> filterproducts(@Param("name") String name,@Param("price") double price, @Param("categoryid") Long categoryid ,Pageable pageable);
+
+	Optional<Product> findbyProduct(String products);
+	
+	Optional<Product>findbyCategory(Category category);
+	
+	
 
 
 }

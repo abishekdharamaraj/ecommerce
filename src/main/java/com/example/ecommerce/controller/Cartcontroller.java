@@ -1,7 +1,8 @@
 package com.example.ecommerce.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.ecommerce.dto.CartRequestDto;
 import com.example.ecommerce.dto.CartResponseDto;
+import com.example.ecommerce.dto.CartitemSearchDto;
 import com.example.ecommerce.service.impl.CartServiceImp;
 
 import jakarta.validation.constraints.Min;
@@ -46,7 +48,7 @@ public class Cartcontroller {
 		
 		
 	}
-	@PatchMapping("/id")
+	@PatchMapping("/{id}")
 	public ResponseEntity patchcart(@PathVariable Long id,@RequestBody CartRequestDto cartrequestdto) {
 		cartimp.patchcart(id,cartrequestdto);
 		return ResponseEntity.status(HttpStatus.CREATED).body("patched");
@@ -54,10 +56,19 @@ public class Cartcontroller {
 	
 	
 	@GetMapping
-	public Page<CartResponseDto> getcart(@RequestParam Long page,@RequestParam Long size){
+	public CartResponseDto getcart(@RequestParam int page,@RequestParam int size){
 		
 		return cartimp.getcart(page,size);
 	}
+	
+	@PostMapping
+	public CartResponseDto filteritems(@RequestParam String products,@RequestParam String Category){
+		
+		
+		return cartimp.filteritems(products,Category);
+	}
+	
+	
 	
 
 }
