@@ -1,6 +1,7 @@
 package com.example.ecommerce.repository;
 
 import java.util.List;
+
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -11,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.example.ecommerce.entity.Category;
 import com.example.ecommerce.entity.Product;
+
 
 public interface ProductRepository extends JpaRepository<Product,Long>{
 	List<Product> findByNameContainingIgnoreCase(String name);
@@ -30,9 +32,9 @@ public interface ProductRepository extends JpaRepository<Product,Long>{
             """)
 	Page<Product> filterproducts(@Param("name") String name,@Param("price") double price, @Param("categoryid") Long categoryid ,Pageable pageable);
 
-	Optional<Product> findbyProduct(String products);
+	Optional<Product> findByName(String products);
 	
-	Optional<Product>findbyCategory(Category category);
+	Optional<Product>findByCategoryid(Category category);
 	
 	
 

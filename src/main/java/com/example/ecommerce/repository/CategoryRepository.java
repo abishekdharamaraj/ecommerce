@@ -9,6 +9,6 @@ import com.example.ecommerce.entity.Category;
 public interface CategoryRepository extends JpaRepository<Category,Long> {
 	
 	
-	Optional<Category>findbyName(String category);
+	Optional<Category>findByName(String category);
 
 }

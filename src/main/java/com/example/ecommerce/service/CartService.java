@@ -35,20 +35,29 @@ import jakarta.transaction.Transactional;
 @Service
 public class CartService implements CartServiceImp{
 	
-	@Autowired
-	private UserReository uspero;
+
+	private final UserReository uspero;
 	
-	@Autowired
-	private CartRepository cartrepo;
+
+	private final CartRepository cartrepo;
 	
-	@Autowired
-	private ProductRepository productrepo;
+
+	private final ProductRepository productrepo;
 	
-	@Autowired
-	private CartItemRepository cartitems;
+
+	private final CartItemRepository cartitems;
 	
-	@Autowired
-	private CategoryRepository categoryrepo;
+
+	private final CategoryRepository categoryrepo;
+	
+	public CartService(UserReository uspero, CartRepository cartrepo,ProductRepository productrepo,CartItemRepository cartitems,CategoryRepository categoryrepo){
+		this.uspero = uspero;
+		this.cartrepo = cartrepo;
+		this.cartitems = cartitems;
+		this.categoryrepo = categoryrepo;
+		this.productrepo = productrepo;
+		
+	}
 
 
 	@Override
@@ -58,37 +67,51 @@ public class CartService implements CartServiceImp{
 			throw new RequestNullException("Invalid Request");
 			
 		}
-		
-
 		Long id = cartrequestdto.getProductid();
+		System.out.println(id);
 		Authentication  authentication = SecurityContextHolder.getContext().getAuthentication();
 		String email = authentication.getName();
+		System.out.println(email);
 		Userentity user = uspero.findByEmail(email).orElseThrow(() -> new RuntimeException("Email not found"));
 
 		Cart cart = cartrepo.findByUser(user).orElseGet(() -> {
 			Cart newCart = new Cart();
             newCart.setUser(user);
+            
             return cartrepo.save(newCart);
 		});
+		System.out.println(cart);
 		
 		Product pro = productrepo.findById(id).orElseThrow(() -> new RuntimeException("product not found"));
 		
+		System.out.println(pro);
+		
 	     
         CartItem item = new CartItem();
-        Optional<CartItem> existingItem = cartitems.findByProductAndCart(pro, cart);
-	     if (existingItem.isPresent()) {
-	    	 item = existingItem.get();
+        List<CartItem> existingItem = cartitems.findAllByProductAndCart(pro, cart);
+        System.out.println( "cartitems..."+ item);
+	     if (!existingItem.isEmpty()) {
+	    	item = existingItem.get(0);
+	    	System.out.println("Updated Quantity: " + item.getQuantity());
+	    	System.out.println("Updated Subtotal: " + item.getSubtotal());
+	    	System.out.println("Cart Total: " + cart.getTotal());
 	    	item.setQuantity( item.getQuantity().add(cartrequestdto.getQuantity()));
+	    	  item.setSubtotal(
+	    		        item.getPrice().multiply(item.getQuantity())
+	    		    );
 	     }
+	     
 	     else {
 		item.setProduct(pro);
 		item.setPrice(pro.getPrice());
 		item.setCart(cart);
 		BigDecimal subtotal = pro.getPrice().multiply(cartrequestdto.getQuantity());
+		System.out.println( "cartitems..."+ subtotal);
 		item.setSubtotal(subtotal);
 		item.setQuantity(cartrequestdto.getQuantity());
 		
 		CartItem cartitem_saved = cartitems.save(item);
+		System.out.println( "cartitems..."+ cartitem_saved);
 		BigDecimal total = cart.getCartitem()
 		        .stream()
 		        .map(CartItem::getSubtotal)
@@ -104,6 +127,7 @@ public class CartService implements CartServiceImp{
 		  return "Created";
 		  
 	}
+	
 
 
 	@Override
@@ -184,7 +208,7 @@ public class CartService implements CartServiceImp{
 		Cart cart = cartrepo.findByUser(users).orElseThrow(() -> new UserNotFoundException("No user Found"));
 	
 		Pageable pageable = PageRequest.of(page, size);
-		Page<CartItem> cartitem =  cartitems.findbyCart(cart,pageable);
+		Page<CartItem> cartitem =  cartitems.findByCart(cart,pageable);
 		
 		Page<CartItemResponseDto> responsecartitem = cartitem.map(item -> {
 			
@@ -220,11 +244,11 @@ public class CartService implements CartServiceImp{
 		Userentity user = uspero.findByEmail(email).orElseThrow(() -> new RuntimeException("not found"));
 		Cart cart = cartrepo.findByUser(user).orElseThrow(() -> new RuntimeException("not found"));
 		
-		Product product = productrepo.findbyProduct(products).orElseThrow(() -> new RuntimeException("not found"));
-		Category categorys = categoryrepo.findbyName(category).orElseThrow(() -> new RuntimeException("not found"));
-		Product productss = productrepo.findbyCategory(categorys).orElseThrow(() -> new RuntimeException("not found"));
+		Product product = productrepo.findByName(products).orElseThrow(() -> new RuntimeException("not found"));
+		Category categorys = categoryrepo.findByName(category).orElseThrow(() -> new RuntimeException("not found"));
+		Product productss = productrepo.findByCategoryid(categorys).orElseThrow(() -> new RuntimeException("not found"));
 		
-		List<CartItem> cartitem = cartitems.findAllbyProduct(product,cart);
+		List<CartItem> cartitem = cartitems.findAllByProduct(product,cart);
 		
 		
 		List<CartItemResponseDto> responseitem = cartitem.stream()
@@ -235,7 +259,6 @@ public class CartService implements CartServiceImp{
 					dto.setQuantity(item.getQuantity());
 					dto.setSubtotal(item.getSubtotal());					
 					return dto;
-					
 				}).collect(Collectors.toList());
 		
 		CartResponseDto responses = new CartResponseDto();

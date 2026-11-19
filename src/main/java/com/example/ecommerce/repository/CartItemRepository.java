@@ -13,14 +13,15 @@ import com.example.ecommerce.entity.Product;
 import com.example.ecommerce.entity.Userentity;
 
 public interface CartItemRepository extends JpaRepository<CartItem,Long>{
-	List<CartItem> findAllbyProduct(Product product, Cart cart);
+	List<CartItem> findAllByProduct(Product product, Cart cart);
 	Optional<CartItem> findByProductAndCart(Product product, Cart cart);
 
-	List<CartItem> findbyCart(Cart cart);
+	List<CartItem> findByCart(Cart cart);
+	List<CartItem> findAllByProductAndCart(Product product, Cart cart);
 
 
 
-	Page<CartItem> findbyCart(Cart cart, Pageable pageable);
+	Page<CartItem> findByCart(Cart cart, Pageable pageable);
 
 
 

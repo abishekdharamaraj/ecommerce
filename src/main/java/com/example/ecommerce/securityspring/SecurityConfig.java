@@ -21,17 +21,13 @@ public class SecurityConfig {
 
 
 	private final JwtFilter jwtFilter;
-	private final CustomAuthenticaltionEntrypoint cstomentrypoint;
-	private final CustomAcessdeniedEntrypoint customacessdenired;
+	
 
-    public SecurityConfig(JwtFilter jwtFilter,
+    public SecurityConfig(JwtFilter jwtFilter) {
 
-    		CustomAuthenticaltionEntrypoint cstomentrypoint,
-    		CustomAcessdeniedEntrypoint customacessdenired) {
+    		
         this.jwtFilter = jwtFilter;
 
-        this.cstomentrypoint = cstomentrypoint;
-        this.customacessdenired =customacessdenired;
     }
 	
 	@Bean
@@ -65,14 +61,13 @@ public class SecurityConfig {
 	            .requestMatchers("/api/role/**").permitAll()
 	            .requestMatchers("/actuator/**").permitAll()
 	            .requestMatchers("/api/user/").permitAll()
-	            .requestMatchers("/api/category").hasRole("User")
-	            .requestMatchers("/api/cart").hasRole("user")
-	            .requestMatchers("/api/product").hasAnyRole("user")
+	            .requestMatchers("/api/category").hasAnyRole("User")
+	            .requestMatchers("/api/cart/**").hasRole("User")	
+	            .requestMatchers("/api/product").hasAnyRole("User")
 	            .anyRequest().authenticated()
 	            
 	        )
-	        .exceptionHandling(exception -> exception.authenticationEntryPoint(cstomentrypoint)
-	        		.accessDeniedHandler(customacessdenired))
+	      
 
 	        .addFilterBefore(
 	            jwtFilter,
